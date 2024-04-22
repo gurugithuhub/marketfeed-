@@ -1,0 +1,48 @@
+import time
+import signal
+import sys
+import os
+
+# Define the log file path
+LOG_FILE = "example.log"
+
+# Define keywords or patterns to monitor
+KEYWORDS = ["ERROR", "WARNING"]
+
+# Function to handle Ctrl+C signal
+def signal_handler(sig, frame):
+    print("\nStopping log monitoring.")
+    sys.exit(0)
+
+# Function to monitor log file
+def monitor_log():
+    print("Monitoring log file: ", LOG_FILE)
+    try:
+        with open(LOG_FILE, "r") as file:
+            file.seek(0, os.SEEK_END)  # Move to the end of file
+            while True:
+                line = file.readline()
+                if line:
+                    print("New log entry: ", line.strip())
+                    analyze_log(line)
+                time.sleep(0.1)
+    except FileNotFoundError:
+        print("Log file not found.")
+        sys.exit(1)
+    except Exception as e:
+        print("Error:", e)
+        sys.exit(1)
+
+# Function to analyze log entries
+def analyze_log(line):
+    for keyword in KEYWORDS:
+        if keyword in line:
+            print("Keyword '{}' found in log entry: {}".format(keyword, line.strip()))
+
+# Main function
+def main():
+    signal.signal(signal.SIGINT, signal_handler)  # Register SIGINT handler
+    monitor_log()
+
+if __name__ == "__main__":
+    main()
